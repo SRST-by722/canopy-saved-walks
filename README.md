@@ -1,73 +1,13 @@
-# Canopy — 15 saved healthy walking journeys
+# Canopy saved healthy journeys
 
-**[Open the live website](https://dodgykid101.github.io/canopy-saved-walks/)**
+Open https://dodgykid101.github.io/canopy-saved-walks/ in a current WebGL browser. No Python server or download is needed.
 
-Published on GitHub Pages. The website works independently of the original computer.
+15 individual journeys cover different areas and distances. Each has four precomputed variants: walking at 4.8 km/h or running at 9 km/h, on 21 June or 21 December clear-sky sunlight scenarios. Departure is fixed at 08:50; maximum search duration is 13 hours. Choose a journey, mode and day, then load the saved journey. Arbitrary endpoints and departure times need the private full local solver.
 
-A complete static demonstration of Canopy's Imperial Corridor urban model and
-the pedestrian health-route work. Choose one of **15 individual journeys** spanning
-different areas and distances. No Python solver, cloud backend, tunnel, model
-installation or running home computer is required after GitHub Pages publishes it.
+The latest demo includes a shared journey clock for the person, original recorded traffic and environmental playback; smoothly repeating pollution and temperature; full-map field estimates; sunlight plots and thermal comfort; personal-reference breathing contributions under the health score; and waits for modelled pedestrian lights plus gaps in retained cars. Pink route arrows, follow-person playback and hidden sample points are retained. Roads and recorded traffic are unchanged.
 
-## What visitors can do
+The wave planner used candidate-location and arrival-time conditions and crossing waits when generating these results. The browser replays those solved routes; it does not rerun the wave or CVAE. CVAE weights and recorded activity inputs are unchanged. Running-specific breathing is not calibrated. Health is an experimental index, not clinical advice. Solar warming and missing-cell filling are illustrative; recorded traffic gap checks are not real-world safety assurance. Route search is bounded.
 
-- Select a saved journey from the menu, ordered by distance, or its overview-map line.
-- See the selected pink route with arrows, compact start/end flags and walking person.
-- Play, pause, scrub and change playback speed; Follow walker starts checked and
-  is checked again after each saved journey loads.
-- Watch the current-condition health score, pollution, temperature and saved breathing
-  predictions change with the walking timeline, with red-only plots below the score.
-- Explore Canopy's retained full geometry, roads, terrain, native signal placements
-  and independent recorded traffic.
+Only derived saved results and public viewer assets are published. Participant histories, baseline source files, model checkpoints, Python runtime and the live solver are excluded. Full local software is distributed separately in a private repository.
 
-The saved walks range from **0.67 km to 9.74 km**, or approximately **11 minutes to
-2 hours 28 minutes including waits**. See JOURNEYS.md for the full list. The 15
-journeys use 18 endpoint locations collectively; this is not an all-pairs database.
-Source road names identify nearby mapped points, not surveyed building entrances.
-
-## Fixed saved settings
-
-All 15 journeys were calculated locally with start time **0** and a **13-hour maximum
-journey duration**. Endpoints, start time and the calculation limit are fixed for
-each exported journey. Changing playback speed or scrubbing does not recalculate it.
-New endpoints or another start time require a new offline calculation and export.
-Reverse directions are not included unless listed explicitly.
-
-The original model's limitations remain: synthetic PM2.5, a native 600-second
-temperature snapshot sampled along the walk, provisional breathing predictions,
-independent modelled pedestrian lights and a bounded route search. These are
-research scenario replays, not medically validated advice or surveyed walking access.
-Masked temperatures remain unavailable and can make the displayed score unavailable;
-the breathing model retains its documented training-mean temperature imputation.
-
-## Publish to GitHub Pages
-
-This folder is the repository root. GITHUB_SETUP.md gives the exact steps. The
-included workflow validates and publishes only manifest-listed web assets.
-It does not install or run the breathing model on GitHub. Its build-time Python
-scripts only verify/copy files; the deployed website is entirely static.
-
-The site is about **491 MB**, below GitHub Pages' documented 1 GB site limit.
-The largest file is about 47 MB; use Git to upload the folder because the web file
-uploader has a lower per-file limit. Users still download 3D assets through their
-browser; a first visit can take time on slower connections.
-
-Source repository: https://github.com/dodgykid101/canopy-saved-walks
-The package includes derived route/breathing predictions intended for the demo,
-but excludes raw participant history, weights, personal baseline, credentials,
-the Python solver and the Windows runtime. See THIRD_PARTY_NOTICES.md for attribution.
-
-## Local checks
-
-`python tools/verify_static.py` checks all saved journeys and protected Canopy hashes.
-`node --test tests/*.mjs` checks data loading, health/breathing playback and camera logic.
-`python tools/prepare_pages.py` creates the publication folder `_site` from the allowlist.
-Use an HTTP server for preview; double-clicking index.html through file:// cannot
-provide the browser's service-worker features.
-
-The prepared site was also tested under a repository subpath on a static-only
-server, without any `/api` routes. Validation details are in validation/RESULTS.md.
-
-GitHub references checked 2026-11-12:
-- https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits
-- https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages
+Validation: node --test tests/*.mjs; python tools/verify_static.py. GitHub Actions builds the allowlisted Pages artifact with tools/prepare_pages.py.

@@ -21,8 +21,8 @@ export function createCrossingPerson(label='Person'){
  const nameCanvas=document.createElement('canvas');nameCanvas.width=512;nameCanvas.height=96;const nameTexture=new THREE.CanvasTexture(nameCanvas);textures.push(nameTexture);
  const name=new THREE.Sprite(new THREE.SpriteMaterial({map:nameTexture,depthTest:false,depthWrite:false}));name.position.y=12;name.scale.set(16,3,1);name.renderOrder=101;group.add(name);
  let lastStatus='';
- function setPose(status,seconds){
-  sprite.material.map=(status==='Crossing'||status==='Walking')?frames[1+Math.floor(Math.max(0,seconds)*8)%8]:frames[0];
+ function setPose(status,seconds,cadence=1){
+  sprite.material.map=(status==='Crossing'||status==='Walking'||status==='Running')?frames[1+Math.floor(Math.max(0,seconds)*8*cadence)%8]:frames[0];
   group.userData.status=status;
   if(status!==lastStatus){const c=nameCanvas.getContext('2d');c.clearRect(0,0,512,96);c.fillStyle='#102738';c.fillRect(0,0,512,96);c.strokeStyle='#ffdc42';c.lineWidth=6;c.strokeRect(3,3,506,90);c.font='bold 43px Arial';c.fillStyle='#fff';c.textAlign='center';c.textBaseline='middle';c.fillText(label+' · '+status,256,49);nameTexture.needsUpdate=true;lastStatus=status}
  }

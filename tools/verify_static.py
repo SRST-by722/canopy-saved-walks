@@ -17,15 +17,20 @@ def verify():
     for relative,digest in protected.items():assert hashlib.sha256((ROOT/relative).read_bytes()).hexdigest()==digest,relative
     catalog=json.loads((ROOT/'saved-routes/catalog.json').read_bytes());meta=json.loads(gzip.decompress((ROOT/'saved-routes/meta.json.gz').read_bytes()))
     assert len(catalog['journeys'])==15 and len({j['id'] for j in catalog['journeys']})==15
-    assert len(list((ROOT/'saved-routes/routes').glob('*.json.gz')))==15
+    assert len(list((ROOT/'saved-routes/routes').glob('*.json.gz')))==60
     locations={p['id']:p for p in catalog['locations']}
     assert catalog['settings']=={'departure_s':0,'max_minutes':780}
     distances=[];durations=[];missing=0;breathing=0
-    for entry in catalog['journeys']:
+    variants=[{**row,**variant,'mode':key.split('-')[0],'day':key.split('-')[1]} for row in catalog['journeys'] for key,variant in row['variants'].items()]
+    assert len(variants)==60
+    for entry in variants:
         file=ROOT/'saved-routes'/entry['file'];data=file.read_bytes()
         assert 'saved-routes/'+entry['file'] in public
         assert hashlib.sha256(data).hexdigest()==entry['sha256']
         result=json.loads(gzip.decompress(data));route=result['routes'][1];audit=result['wave_audit'][1]
+        assert result['travel_mode']==entry['mode'] and result['solar_day']==entry['day']
+        assert route['breathing_reference'] and result['traffic_gaps'] is not None
+        assert all(all(math.isfinite(s[k]) for k in ['pollution','temperature','sunlight','thermal_proxy']) for s in route['profile'])
         assert result['routes'][0] is None and result['cvae_enabled']
         assert not {'participant','inputs_sha256','history_audit'}.intersection(result['breathing_model'])
         assert route['edge_keys'][0][0]==locations[entry['origin']]['node']
@@ -37,7 +42,7 @@ def verify():
         waits=sum(e['end']-e['start'] for e in events if e['kind']=='Waiting')
         distance=sum(e['distance'][-1] for e in events if e['kind']!='Waiting')
         assert abs(waits-route['wait_s'])<1e-5
-        assert abs(distance/(4/3)+waits-route['duration_s'])<1e-5
+        assert abs(distance/result['travel_speed']['speed_m_s']+waits-route['duration_s'])<1e-5
         assert abs(distance-entry['distance_m'])<.011
         assert all(math.isfinite(s['breathing']) for s in route['breathing_profile'])
         assert len(route['breathing_profile'])>=2
@@ -51,7 +56,7 @@ def verify():
     total=sum(e['bytes'] for e in manifest['files'])
     assert total<1_000_000_000 and max(e['bytes'] for e in manifest['files'])<100*1024**2
     assert 'model_identity' not in meta
-    report=dict(status='passed',journeys=15,locations=len(locations),public_assets=len(public),protected_canopy_assets=len(protected),
+    report=dict(status='passed',journeys=15,variants=60,locations=len(locations),public_assets=len(public),protected_canopy_assets=len(protected),
         site_bytes=total,distance_m=[round(min(distances),2),round(max(distances),2)],duration_minutes=[round(min(durations)/60,1),round(max(durations)/60,1)],
         saved_breathing_samples=breathing,missing_temperature_samples_preserved=missing,backend_required=False)
     print(json.dumps(report,indent=2));return report
