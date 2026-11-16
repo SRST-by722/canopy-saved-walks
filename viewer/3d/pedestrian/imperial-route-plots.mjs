@@ -17,14 +17,14 @@ export function createCorridorPlots(box) {
     ['pollution', 'Tracer-derived PM2.5 scenario', 'µg/m³'],
     ['temperature', 'Temperature', '°C'],
     ['sunlight', 'Sunlight · local irradiance', 'W/m²'],
-    ['breathing', 'Predicted breathing · INH010 CVAE', 'breaths/min'],
+    ['breathing', 'Predicted breathing · Saved CVAE', 'breaths/min'],
     ['distance', 'Distance travelled', 'm'],
     ['wait', 'Crossing waiting · lights + traffic', 's'],
   ];
   function reset() {
     route = null;
     box.innerHTML =
-      '<p>Calculate a journey to see selected-route profiles.</p><small>INH010 CVAE connected · predictions update every 5 minutes, including waiting.</small>';
+      '<p>Load a saved journey to see selected-route profiles.</p><small>Saved CVAE connected · predictions update every 5 minutes, including waiting.</small>';
   }
   function render(result) {
     route = result.routes[1];
@@ -53,7 +53,7 @@ export function createCorridorPlots(box) {
     }
     box.insertAdjacentHTML(
       'beforeend',
-      '<p class="hint">INH010 CVAE scenario replay: time-aligned Canopy tracer-derived pollution, native temperature and recorded activity/humidity template. Breathing updates every 5 minutes; shorter walks can stay flat. Not validated physiology.</p>',
+      '<p class="hint">Saved CVAE scenario replay: time-aligned Canopy tracer-derived pollution, native temperature and recorded activity/humidity template. Breathing updates every 5 minutes; shorter walks can stay flat. Not validated physiology.</p>',
     );
     if(result.travel_mode==='run')box.insertAdjacentHTML('beforeend','<p class="hint">Running: CVAE retains the recorded activity template. These breathing and health estimates are not calibrated for running.</p>');
     update(0);
