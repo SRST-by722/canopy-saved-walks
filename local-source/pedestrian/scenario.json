@@ -1,0 +1,19 @@
+{
+  "id": "canopy_shared_solar_clock_20261116_v3",
+  "baseline": 6,
+  "spatial_amplitude": 10,
+  "pulse_amplitude": 24,
+  "period_s": 180,
+  "x_scale_m": 65,
+  "y_scale_m": 95,
+  "drift_scale_m": 110,
+  "min": 6,
+  "max": 40,
+  "health_display_scale_s": 6000,
+  "description": "Shared journey clock; CANOPY pollution, temperature and traffic recordings repeat every 600 s across full breathing-model coverage. Fields sampled at walker position and replay phase; journey and breathing state never reset. Tracer-derived PM2.5 scenario is uncalibrated, not a forecast; vehicle emissions are not simulated. Local clear-sky solar irradiance follows the selected June/December scenario day at departure clock time plus elapsed time, without replay. Wave branching and traversal use a labelled air-plus-solar warming proxy; CVAE still uses native air temperature.",
+  "breathing_history_offset_s": 39600,
+  "missing_temperature_penalty": 3.0,
+  "tracer_scale": 0.001,
+  "tracer_reference": 33.81,
+  "solar_warming_c_per_800": 6.0
+}

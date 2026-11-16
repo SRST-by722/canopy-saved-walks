@@ -1,0 +1,7 @@
+# For source installations; the bundled Windows runtime is the tested configuration.
+numpy>=2.0,<3
+pandas>=2.2,<4
+torch>=2.6,<3
+Pillow>=10,<13
+shapely>=2.0,<3
+packaging>=24

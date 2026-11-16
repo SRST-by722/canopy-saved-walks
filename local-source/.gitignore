@@ -1,0 +1,6 @@
+.work/
+.venv/
+private/
+cache/
+__pycache__/
+*.pyc

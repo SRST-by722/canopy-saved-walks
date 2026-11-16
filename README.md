@@ -11,3 +11,7 @@ The wave planner used candidate-location and arrival-time conditions and crossin
 Only derived saved results and public viewer assets are published. Participant histories, baseline source files, model checkpoints, Python runtime and the live solver are excluded. Full local software is distributed separately in a private repository.
 
 Validation: node --test tests/*.mjs; python tools/verify_static.py. GitHub Actions builds the allowlisted Pages artifact with tools/prepare_pages.py.
+
+## Full local app source
+
+The current local Python solver and setup instructions are in [local-source](local-source/README.md). Private participant/model inputs are excluded. This does not change the public demo link; no new release is needed.
