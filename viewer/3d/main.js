@@ -1225,6 +1225,9 @@ function repaint() {
   }
 }
 async function loadStep(step) {
+  if(window.canopyPedestrian&&section==='fields'&&['poll','solar'].includes(state.phase)){
+    updateSharedTime(window.canopyPedestrian.time,window.canopyPedestrian.environment,true);return;
+  }
   const requestToken = state.token + 1;
   try {
     return await loadStepInner(step);
@@ -1457,7 +1460,9 @@ function setRateOptions(kind, value) {
   );
   ui.rate.value = String(value);
 }
+function sharedView(){return Boolean(window.canopyPedestrian&&(window.canopyPedestrian.active||(section==='campus'&&tour.shot==='traffic')||(section==='fields'&&['poll','solar'].includes(state.phase))));}
 ui.play.addEventListener('click', () => {
+  if(sharedView()){window.canopyPedestrian.setPlaying(!window.canopyPedestrian.playing);return;}
   if(section==='campus'&&tour.shot==='birds'&&window.canopyBirds){window.canopyBirds.toggle();return;}
   if (section === 'campus' && tour.shot === 'traffic' && corridorContext) {corridorContext.setPlaying(!corridorContext.playing);return;}
   if(section==='campus'&&tour.shot==='uavs'&&uavLayer?.flightSelection){uavLayer.playing=!uavLayer.playing;return;}
@@ -1472,6 +1477,7 @@ ui.play.addEventListener('click', () => {
   } else setPlaying(!state.playing);
 });
 ui.rate.addEventListener('change', () => {
+  if(sharedView()){window.canopyPedestrian.setSpeed(+ui.rate.value);return;}
   if(section==='campus'&&tour.shot==='birds'&&window.canopyBirds){window.canopyBirds.setRate(ui.rate.value);return;}
   if (section === 'campus' && tour.shot === 'traffic' && corridorContext) {document.querySelector('#corridor-traffic-rate').value=ui.rate.value;return;}
   if (section === 'fields' && seqMode()) fieldRateOverrides[state.phase] = +ui.rate.value;
@@ -1484,6 +1490,7 @@ ui.rate.addEventListener('change', () => {
   else if (state.playing) setPlaying(true);
 });
 ui.step.addEventListener('input', () => {
+  if(sharedView()){window.canopyPedestrian.seekWorld(+ui.step.value);return;}
   if(section==='campus'&&tour.shot==='birds'&&window.canopyBirds){window.canopyBirds.seek(ui.step.value);return;}
   if (section === 'campus' && tour.shot === 'traffic' && corridorContext) {const slider=document.querySelector('#corridor-traffic-step');slider.value=ui.step.value;slider.dispatchEvent(new Event('input'));return;}
   if (section === 'campus' && uavLayer && tour.shot === 'uavs') {
@@ -1653,6 +1660,7 @@ for (const el of [
   el.addEventListener('input', applyLayers);
 for (const el of [ui.solarDate, ui.solarMode])
   el.addEventListener('change', () => {
+    if(window.canopyPedestrian&&section==='fields'&&state.phase==='solar'){solarPhaseSetup();updateSharedTime(window.canopyPedestrian.time,window.canopyPedestrian.environment,true);return;}
     // new day / display: the phase gets its frame count and rate, then restarts
     solarPhaseSetup();
     state.fields.solar = state.fields.shadow = null;
@@ -2188,6 +2196,10 @@ async function runFields(phase = PHASE_ORDER[0]) {
   if(intent!==viewIntent)return;
   if(fieldInitializationError){ui.stage.textContent='Physics fields unavailable: '+fieldInitializationError.message;return;}
   window.canopyBirds?.setActive(false);
+  if(['poll','solar'].includes(phase)&&window.canopyPedestrian){
+    section='fields';tour.active=false;flight=null;setPlaying(false);state.token++;state.loading=false;state.phase=phase;if(phase==='solar')solarPhaseSetup();state.introDone=true;ui.mode.value='seq';ui.auto.checked=false;controls.enabled=true;
+    applyLayers();setSectionUI();updateSharedTime(window.canopyPedestrian.time,window.canopyPedestrian.environment,true);flyTo(overheadPose(),800);return;
+  }
   if (section === 'fields' && state.introDone) {
     ui.mode.value = 'seq';
     setPhase(phase);
@@ -2434,6 +2446,7 @@ function animate(now) {
   const particles = state.introDone && (wind.lines.visible || trailsOn);
   if (particles) { if (wind.lines.visible) stepParticles(dt); if (trailsOn) trails.update(dt); }
   // Draw only when the visible result changes; preserve full source data and geometry.
+  if(sharedView())updateSharedTime(window.canopyPedestrian.time,window.canopyPedestrian.environment);
   if (ui.loading.classList.contains('hide') && (renderDirty || moving || fading || particles)) {
     renderer.render(scene, camera);
     performanceStats.renders++;
@@ -3079,7 +3092,7 @@ if (SCENE.city_tools) {
     catalogURL: new URL(SCENE.city_tools, ROOT),
     scene,
     camera,
-    invalidate,
+    invalidate,onTime:updateSharedTime,isSharedView:sharedView,
     enter() {
       setPlaying(false);
       ui.auto.checked = false;
@@ -3138,11 +3151,46 @@ if (TRAILS_OK) {
   applyLayers();
 }
 
-// Optional local pedestrian service. Native road/traffic objects are untouched.
+// One scenario clock for the local walking, traffic, and pollution views.
+let lastSharedPaint=-1,lastSolarPaint='',lastShadowPaint='';
+function updateSharedTime(t,environment,force=false){
+  corridorContext?.show(Math.floor((t%environment.meta.traffic_period_s)/(environment.meta.traffic_dt_s||1)));
+  if(section==='fields'&&state.phase==='poll'&&(force||Math.floor(t*4)!==lastSharedPaint)){
+    state.playing=false;lastSharedPaint=Math.floor(t*4);state.fields.poll=environment.pollutionFrame(t);paintPollution(state.fields.poll);invalidate();
+  }
+  const solarTick=environment.solarDay+':'+ui.solarMode.value+':'+Math.floor(t*4);
+  if(section==='fields'&&state.phase==='solar'&&(force||solarTick!==lastSolarPaint)){
+    state.playing=false;lastSolarPaint=solarTick;
+    const sm=manifest.arrays['solar_'+environment.solarDay+'.npy'],clock=31800+t;
+    let hi=sm.time_s.findIndex(v=>v>clock);if(hi<0)hi=sm.time_s.length-1;
+    const lo=Math.max(0,hi-1),f=Math.max(0,Math.min(1,(clock-sm.time_s[lo])/(sm.time_s[hi]-sm.time_s[lo]||1)));
+    if(sm.altitude_deg&&sm.azimuth_deg)placeSun(sm.altitude_deg[lo]*(1-f)+sm.altitude_deg[hi]*f,sm.azimuth_deg[lo]*(1-f)+sm.azimuth_deg[hi]*f);
+    if(ui.solarMode.value==='shadow'){
+      const index=f<.5?lo:hi,key=environment.solarDay+':'+index;
+      if(force||key!==lastShadowPaint){
+        lastShadowPaint=key;state.fields.solar=null;
+        frame(solarKey(),solarFile(),index,true).then(values=>{
+          if(lastShadowPaint!==key||ui.solarMode.value!=='shadow'||environment.solarDay!==key.split(':')[0])return;
+          state.fields.shadow=values;uploadShadow(values);applyLayers();invalidate();
+        }).catch(error=>{lastShadowPaint='';ui.stage.textContent='Shadow frame unavailable: '+error.message;});
+      }
+    }else{lastShadowPaint='';state.fields.shadow=null;state.fields.solar=environment.solarFrame(t);paintSolar(state.fields.solar);applyLayers();invalidate();}
+  }
+  const w=window.canopyPedestrian;
+  if(w&&sharedView()){
+    ui.auto.checked=false;ui.play.disabled=false;ui.play.textContent=w.playing?'❚❚':'▶';ui.step.disabled=false;ui.step.min=w.start;ui.step.max=w.end;ui.step.step=.1;ui.step.value=t;
+    if(ui.rate.options[0]?.textContent!=='0.25×')ui.rate.replaceChildren(...[.25,.5,1,2,4,5,8,10,12,20,30,60].map(v=>new Option(v+'×',v)));
+    ui.rate.disabled=false;ui.rate.value=w.speed;
+    if(section==='fields'&&['poll','solar'].includes(state.phase))ui.stage.textContent='CANOPY · '+(state.phase==='solar'?'Sunlight · '+solarDayLabel():'Pollution')+' · shared scenario time';
+    const phase=t%environment.meta.traffic_period_s,absolute=environment.meta.traffic_t0_s+phase;
+    ui.timeLabel.textContent=`Scenario ${new Date((31800+t)*1000).toISOString().slice(11,19)} · journey t=${t.toFixed(1)} s · replay ${Math.floor(t/environment.meta.traffic_period_s)+1} · traffic ${String(Math.floor(absolute/3600)).padStart(2,'0')}:${String(Math.floor(absolute/60)%60).padStart(2,'0')}:${String(Math.floor(absolute)%60).padStart(2,'0')} · ${w.speed}×`;
+  }
+}
+// Optional local pedestrian service. Original roads and recorded trajectories are preserved.
 if (SCENE.id === 'imperial_corridor_8km') {
   const { installCanopyPedestrian } = await import('./pedestrian/canopy-pedestrian.mjs');
   await installCanopyPedestrian(window.viewer, {
-    invalidate,
+    invalidate,onTime:updateSharedTime,isSharedView:sharedView,
     enter() {
       viewIntent++; ui.auto.checked = false; tour.active = false; flight = null;
       section = 'campus'; controls.enabled = true; setPlaying(false);

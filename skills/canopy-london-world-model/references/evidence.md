@@ -14,7 +14,7 @@ The public deployment checks confirmed successful Pages build, byte equality of 
 
 The scene descriptor characterises the wind as SCALED rollout without a CFD reference; temperature as controlled scenario output; solar as clear-sky building-based estimates; tracer as arbitrary road-cell sources; flood as a prescribed storm. Browser acceptance does not validate those physical models.
 
-Traffic demand and replay need the additional checks requested on 17 November. Underground demonstration and newer route/health changes are separate integration work. Available module files alone cannot establish completion. Later collaborator reports must be checked against the deployed commit.
+Traffic demand and replay need the additional checks requested on 17 November. Underground demonstration remains separate integration work. The 17 November health update passed 21 Node tests and the static verifier (60 variants, 1,480 protected CANOPY asset hashes unchanged). Mini Safari locally loaded full geometry, switched walking/running and June/December, played and sought the shared clock, and displayed winter sunlight and Bristol-style wind streaks. Console error totals and FPS were not measured for this health review. These checks do not validate the health model; running breathing is uncalibrated. Available module files alone cannot establish completion. Later collaborator reports must be checked against the deployed commit.
 
 ## Provenance trail
 

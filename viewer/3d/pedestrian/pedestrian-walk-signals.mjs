@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import {trafficGapClear} from './traffic-gaps.mjs';
 
 export function walkSignalState(program,time){
  const period=program.red_s+program.green_s+program.clearance_s;
@@ -29,6 +30,7 @@ export function createWalkSignals(data){
  }
  const textures={red:texture(false),green:texture(true)};
  const programs=new Map(data.pedestrian_programs.map(r=>[r.id,r.program]));
+ let trafficGaps={};
  const heads=data.signals.map(s=>{
   const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:textures.red,depthTest:false,depthWrite:false}));
   sprite.name='pedestrian-signal:'+s.id;sprite.position.set(s.head[0],5,-s.head[1]);sprite.scale.set(3,6,1);sprite.renderOrder=90;
@@ -37,9 +39,9 @@ export function createWalkSignals(data){
  });
  function update(time){
   let green=0;
-  heads.forEach(h=>{const state=walkSignalState(programs.get(h.userData.crossingId),time);h.userData.state=state;h.material.map=textures[state];if(state==='green')green++});
+  heads.forEach(h=>{const id=h.userData.crossingId,program=programs.get(id),light=walkSignalState(program,time),gap=trafficGaps[id],period=program.red_s+program.green_s+program.clearance_s,phase=((time-program.origin_s)%period+period)%period,clear=trafficGapClear(gap,time)&&(!gap||phase+gap.crossing_s+gap.clearance_s<=period+1e-8),state=light==='green'&&clear?'green':'red';h.userData.state=state;h.userData.trafficBlocked=!clear;h.material.map=textures[state];if(state==='green')green++});
   return {green,red:heads.length-green};
  }
  function dispose(){heads.forEach(h=>h.material.dispose());Object.values(textures).forEach(t=>t.dispose())}
- return {group,heads,update,dispose};
+ return {group,heads,update,dispose,setTrafficGaps(value){trafficGaps=value??{};}};
 }

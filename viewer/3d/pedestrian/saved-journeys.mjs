@@ -14,13 +14,13 @@ export function journeyLabel(row){
 let catalogPromise=null,metaPromise=null;
 export function loadSavedCatalog(){
   return catalogPromise||=(async()=>{
-  const response=await fetch(new URL('catalog.json',savedRoot),{cache:'no-cache'});
+  const response=await fetch(new URL('catalog.json',savedRoot),{cache:'no-store'});
   if(!response.ok)throw Error('Saved journey list could not be loaded. Please reload.');
   return response.json();
   })().catch(e=>{catalogPromise=null;throw e;});
 }
-export async function readPacked(url,expectedHash){
-  const response=await fetch(url);
+export async function readPacked(url,expectedHash,options){
+  const response=await fetch(url,options);
   if(!response.ok)throw Error('Saved journey could not be downloaded. Please try again.');
   const bytes=await response.arrayBuffer();
   if(expectedHash){
@@ -30,15 +30,17 @@ export async function readPacked(url,expectedHash){
   if(!globalThis.DecompressionStream)throw Error('This viewer needs a current browser with gzip support.');
   return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))).json();
 }
-export function loadSavedMeta(){return metaPromise||=readPacked(new URL('meta.json.gz',savedRoot)).catch(e=>{metaPromise=null;throw e;});}
+export function loadSavedMeta(){return metaPromise||=readPacked(new URL('meta.json.gz',savedRoot),undefined,{cache:'no-store'}).catch(e=>{metaPromise=null;throw e;});}
 const recent=new Map();
-export async function loadSavedJourney(catalog,id){
-  const row=findJourney(catalog,id);
-  if(recent.has(id))return recent.get(id);
+export async function loadSavedJourney(catalog,id,mode='walk',day='20260621'){
+  const journey=findJourney(catalog,id),key=`${id}-${mode}-${day}`;
+  const row=journey.variants?.[`${mode}-${day}`];
+  if(!row)throw Error('This saved scenario is unavailable.');
+  if(recent.has(key))return recent.get(key);
   const result=await readPacked(new URL(row.file,savedRoot),row.sha256);
-  if(result.saved_journey?.origin!==row.origin||result.saved_journey?.destination!==row.destination)
-    throw Error('Saved journey endpoints do not match the selection.');
-  recent.set(id,result);
+  if(result.saved_journey?.origin!==journey.origin||result.saved_journey?.destination!==journey.destination||result.travel_mode!==mode||result.solar_day!==day)
+    throw Error('Saved journey does not match the selection.');
+  recent.set(key,result);
   while(recent.size>3)recent.delete(recent.keys().next().value);
   return result;
 }

@@ -27,4 +27,4 @@ The demonstration illustrates how to assemble geographically aligned city geomet
 
 ## Scope of this release
 
-The team's existing CANOPY work supplies London geometry and recorded numerical/agent data. BoHan's contribution in this release is the viewer optimisation, directional wind presentation and independently hosted integration. New traffic validation, underground integration and current upstream changes should be discussed as ongoing work until their outputs are checked.
+The team's existing CANOPY work supplies London geometry and recorded numerical/agent data. BoHan's contribution in this release is the viewer optimisation, directional wind presentation and independently hosted integration. New traffic validation, underground integration remain ongoing work. The 17 November health replay has 60 saved variants and a shared journey/traffic clock; distinguish browser checks from clinical validation.

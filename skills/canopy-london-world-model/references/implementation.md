@@ -5,9 +5,9 @@
 - Deployment repository [SRST-by722/canopy-saved-walks](https://github.com/SRST-by722/canopy-saved-walks).
 - Pages source branch `london-optimised`.
 - Runtime baseline commit `871c0171fe779e0391824358f7c4e719a690636e`.
-- Upstream source `dodgykid101/canopy-saved-walks` at `bac8b27f39811918b4530c859139b324285daf8a`.
+- Health replay source updated on 17 November to `dodgykid101/canopy-saved-walks` at `f6e341b80e8280c6a2cb3af37879bd87a541f862`.
 - Scene ID `imperial_corridor_8km`. The actual square is 8,192 m per side.
-- The optimised runtime manifest contains 1,583 assets totalling 490,742,370 bytes. Supporting documentation is outside that download manifest.
+- The optimised runtime manifest contains 1,632 assets totalling 496,903,865 bytes. Supporting documentation is outside that download manifest.
 
 Paths below are relative to repository root.
 
@@ -45,3 +45,7 @@ The download manifest was refreshed accordingly. This release reused the supplie
 London uses `corridor_context.traffic_meta` and `traffic_binary`. Its top-level `traffic` and `transport` entries are absent. Therefore the generic traffic and TfL loaders alone cannot establish which features London exposes. The descriptor also sets `corridor_context.temperature_hidden=true`; temperature arrays exist, but their presence does not prove a visible temperature tab.
 
 For work after this snapshot, compare upstream changes before rebasing. A current online report from a collaborator can describe a newer branch than this deployed snapshot.
+
+## Health integration, 17 November
+
+Fifteen journeys now have walking/running and June/December variants (60 saved files). `journey-clock.mjs` and `shared-environment.mjs` map journey progress to the shared scenario and traffic clock. `solar-environment.mjs` supplies date-specific sunlight. Catalogue and metadata reads bypass the offline asset cache with `cache: no-store`, while shared promises avoid duplicate requests. Geometry and original physical-field/traffic bytes are unchanged. Local solver source remains upstream; the deployed viewer replays saved outputs.

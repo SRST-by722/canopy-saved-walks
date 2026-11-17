@@ -1,16 +1,17 @@
-# CANOPY
-Physics Urban World — Imperial Corridor, London.
+# Canopy saved healthy journeys
 
-GitHub Pages serves the viewer and local vector assets. Original and compact physical data are stored in the upstream GitHub Release. A service worker routes large-asset requests through the existing CANOPY read-only data gateway for CORS compatibility. No full-dataset download or installation is required before entering Overview.
+Open https://dodgykid101.github.io/canopy-saved-walks/ in a current WebGL browser. No Python server or download is needed.
 
-Open via HTTPS or a localhost server. Full building geometry is retained. Compact fields retain original sampled timestamps; spatial averaging smooths local extrema. Source provenance is included under scenes/imperial_corridor_8km/compact-provenance/.
+15 individual journeys cover different areas and distances. Each has four precomputed variants: walking at 4.8 km/h or running at 9 km/h, on 21 June or 21 December clear-sky sunlight scenarios. Departure is fixed at 08:50; maximum search duration is 13 hours. Choose a journey, mode and day, then load the saved journey. Arbitrary endpoints and departure times need the private full local solver.
 
-The loading illustration is a stylized pixel-art campus, not a measured building model.
+The latest demo includes a shared journey clock for the person, original recorded traffic and environmental playback; smoothly repeating pollution and temperature; full-map field estimates; sunlight plots and thermal comfort; personal-reference breathing contributions under the health score; and waits for modelled pedestrian lights plus gaps in retained cars. Pink route arrows, follow-person playback and hidden sample points are retained. Roads and recorded traffic are unchanged.
 
-## Low-altitude UAV demo
+The wave planner used candidate-location and arrival-time conditions and crossing waits when generating these results. The browser replays those solved routes; it does not rerun the wave or CVAE. CVAE weights and recorded activity inputs are unchanged. Running-specific breathing is not calibrated. Health is an experimental index, not clinical advice. Solar warming and missing-cell filling are illustrative; recorded traffic gap checks are not real-world safety assurance. Route search is bounded.
 
-Open `?shot=uavs` from the site root to update the local cache and enter the flight view. The 100 synthetic ground stations cover the 8 km domain. The original WavePDE solver produced 336 directed neighbouring routes, all reaching their endpoints and passing collision checks. The hard ceiling is 40 m above ground; the exported maximum is 36.8 m. Use **At building** for a close replay, or **100 stations** for the domain view.
+Only derived saved results and public viewer assets are published. Participant histories, baseline source files, model checkpoints, Python runtime and the live solver are excluded. Full local software is distributed separately in a private repository.
 
-Planning calls the original project's `wavepde.torch_backend.solver.solve` and `tracing.trace_paths` on 8 × 8 × 4 m voxels, with a 2048 m local crop per source. The 3-D wind is included in both propagation and characteristic tracing. No A* path or graph-search fallback is used. Raw PDE first-peak arrivals are retained separately from the integrated kinematic replay times. All 336 rounded exports were independently checked against 2 m terrain/building/tree columns at intervals of at most 0.5 m.
+Validation: node --test tests/*.mjs; python tools/verify_static.py. GitHub Actions builds the allowlisted Pages artifact with tools/prepare_pages.py.
 
-This is a model demonstration: frozen wind at 7,500 s is transferred by AGL from the original flat scene; there is no new CFD validation, rotor dynamics, real landing-site survey, full-domain optimality proof, or all-pairs routing. The 280 building examples have an obstructed direct reference between the same 12 m flight gates; avoidance may be lateral or vertical. See `assets/uav-wavepde-20261111/evidence.json` for exact source identities and limitations. Only derived replay assets are included here; raw arrival fields, source snapshot and the reproducible run remain on `ese-yl222`. The earlier A* export remains archived under `assets/uav-low-altitude-20261111` and is no longer the active demo.
+## Full local app source
+
+The current local Python solver and setup instructions are in [local-source](local-source/README.md). Private participant/model inputs are excluded. This does not change the public demo link; no new release is needed.

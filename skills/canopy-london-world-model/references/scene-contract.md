@@ -33,7 +33,7 @@ Read `protocol_display.npy_transport`, `preview_fields_8m`, `wind_history`, the 
 - The road tracer has 21 samples at 30 s intervals and arbitrary units. The descriptor describes uniform sources on mapped road cells.
 - Flood preview has 100 retained samples from 181 source frames. Use `time_s` and `source_indices`; its timestamps are uneven.
 - Temperature metadata describes a 32 m grid with 11 samples; London hides temperature through its context config.
-- Traffic has an independent recorded clock. Route elapsed time and model elapsed time need explicit mapping.
+- Traffic retains recorded sample times. The 17 November saved-journey integration maps journey elapsed time onto a shared scenario clock; verify play and seek against both the route panel and traffic. Other physics timelines retain their source-specific time semantics.
 
 The 8 m previews include valid-cell 2 × 2 averaging and float16 storage. Several transport arrays use 8-bit quantisation, decoded with `offset + code * scale` and an invalid code. Gzip preserves the stored bytes but does not undo prior averaging or quantisation. Historical source descriptions saying lossless transport must be interpreted at this storage stage.
 
